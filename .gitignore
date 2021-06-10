@@ -1,0 +1,6 @@
+*.dll
+./inc/GL
+./inc/glad
+./inc/GLFW
+./inc/glm
+./inc/KHR
