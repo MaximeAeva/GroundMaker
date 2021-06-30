@@ -74,14 +74,22 @@ int main()
 
     Camera cam();
 
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
-    int dim = 5;
+    //Parameters
+    int dim = 8;//Square side (2^dim + 1)
+    int number = 1;//Number of square on a side (total side points = (2^dim + 1)*number)
+    int filter = 5;//Side size of the median filter
+    float smoothness = 0.9;//Coefficient to lower the added randomization
+    int step = 1;//Grid space
+
     int dimension = pow(2, dim)+1;
-    float* minimap = diamondSquare(dimension, 0.9, 3);
-    float* mappedVert = MapVertices(dimension, 2, minimap);
+    float* minimap = diamondSquare(dimension, number, smoothness, filter);
+    dimension *= number;
+    float* mappedVert = MapVertices(dimension, step, minimap);
     unsigned int* mappedIdx = MapIndices(dimension);
 
+
+    // set up vertex data (and buffer(s)) and configure vertex attributes
+    // ------------------------------------------------------------------
     unsigned int EBO, VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -129,7 +137,7 @@ int main()
         //glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
         glm::mat4 view          = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         glm::mat4 projection    = glm::mat4(1.0f);
-        projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
         //view       = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         view = camera.GetViewMatrix();
         ourShader.setMat4("projection", projection); 
@@ -158,6 +166,14 @@ int main()
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
     glfwTerminate();
+
+    minimap = NULL;
+    delete [] minimap;
+    mappedVert = NULL;
+    delete [] mappedVert;
+    mappedIdx = NULL;
+    delete [] mappedIdx;
+
     return 0;
 }
 

@@ -6,17 +6,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
-#include <cstdlib>
+#include <random>
 #include <cmath>
 #include <iostream>
-
-//extern float mappedVert[24];
 
 //extern unsigned int mappedIdx[6];
 
 float* MapVertices(int size, float step, float* diamond);
 unsigned int* MapIndices(int size);
-float* diamondSquare(int size, float smoothness, int filter);
+float* diamondSquare(int size, int number, float smoothness, int filter);
 
 
 #endif

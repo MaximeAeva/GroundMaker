@@ -1,17 +1,53 @@
 #include "dsq.hpp"
 
-float mappedVert[] = {
-        // positions         // colors
-         0.0f,  0.0f, -0.5f,  0.0f, 1.0f, 0.0f,  // bottom right
-         0.5f,  0.0f, -0.5f,  0.0f, 1.0f, 0.0f,  // bottom left
-         0.0f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  0.5f, 1.0f, 0.0f  // top 
-    };
-
-unsigned int mappedIdx[] = {  // Notons que l’on commence à 0!
-0, 1, 2,   // premier triangle
-2, 3, 1   // second triangle
+float hmEarth[16] = {
+    0.05, 235.0/255.0, 49.0/255.0, 16.0/255.0, //Red
+    0.2, 10.0/255.0, 10.0/255.0, 0.0, //Black
+    0.6, 90.0/255.0, 160.0/255.0, 70.0/255.0, //Green
+    0.9, 200.0/255.0, 210.0/255.0, 190.0/255.0 //White
 };
+
+/**
+ * @brief 
+ * 
+ * @param val current value
+ * @param mode percent, 'r', 'g', 'b'
+ * @param board array fill with rgb from min to max
+ * @param size array lines
+ * @param min minimmum value
+ * @param max maximum value
+ * @return float 
+ */
+float heatMap(float val, char mode, float* board, int size, float min, float max)
+{
+    int idx = 0, modeVal;
+    val -= min;
+    val /= (max-min);
+    while(board[4*idx]<val && idx<size)
+        idx++;
+    switch(mode)
+    {
+        case 'r':
+            modeVal = 1;
+            break;
+        case 'g':
+            modeVal = 2;
+            break;
+        case 'b':
+            modeVal = 3;
+            break;
+    }
+    if(idx == 0 || idx == size)
+    {
+        if(idx) idx--;
+        return board[(4*idx)+modeVal];
+    }
+    else 
+    {
+        float a = (board[(4*idx)+modeVal]-board[(4*(idx-1))+modeVal])/(board[(4*idx)]-board[(4*(idx-1))]);
+        return (val-board[(4*(idx-1))])*a+board[(4*(idx-1))+modeVal];
+    }
+}
 
 std::vector<float> mergeSort(std::vector<float> f)
 {
@@ -19,18 +55,18 @@ std::vector<float> mergeSort(std::vector<float> f)
     if(s<=1) return f;
     else
     {
-        int step = 1;
+        int step = 1, av, i, k1, k2, lim;
         std::vector<float> z;
         while(pow(2, step-1)< s)
         {
-            int av = pow(2, step);
-            int i = 0;
+            av = pow(2, step);
+            i = 0;
             z={};
             while(i<s)
             {
                 if((s-i)<av && (s-i)%av)
                 {
-                    int k1 = 0, k2 = 0, lim;
+                    k1 = 0; k2 = 0; lim;
                     if(pow(2, step-1)<(s-i)) lim = pow(2, step-1);
                     else lim = (s-i);
                     while(k1<lim || k2<(s-i-lim))
@@ -60,7 +96,7 @@ std::vector<float> mergeSort(std::vector<float> f)
                 }
                 else
                 {
-                    int k1 = 0, k2 = 0;
+                    k1 = 0; k2 = 0;
                     while(k1<pow(2, step-1) || k2<pow(2, step-1))
                     {
                         if(k1==pow(2, step-1))
@@ -98,13 +134,15 @@ std::vector<float> mergeSort(std::vector<float> f)
 float* medianFilter(float* M, int fieldSize, int size)
 {
     float mean = 0;
+    int edge = size/2;
+    float* K = new float [fieldSize*fieldSize]();
+    std::vector<float> v, k;
+
     for(int i = 0; i<fieldSize*fieldSize; i++)
         mean += M[i];
     mean /= fieldSize*fieldSize;
-    int edge = size/2;
-    float* K = new float [fieldSize*fieldSize]();
-    std::vector<float> v;
-    std::vector<float> k;
+    
+
     for(int i = 0; i<fieldSize; i++)
     {
         for(int j = 0; j<fieldSize; j++)
@@ -130,17 +168,19 @@ float* medianFilter(float* M, int fieldSize, int size)
 
 float* MapVertices(int size, float step, float* diamond)
 {
-    int max = 0, min = 0;
+    int max = 0, min = 0, mod, dv;
+    float* M = new float [6*size*size]();
+
     for(int i = 0; i<size*size; i++)
     {
         if(diamond[i]>max) max = diamond[i];
         else if(diamond[i]<min) min = diamond[i];
     }
-    float* M = new float [6*size*size]();
+    
     for(int i = 0; i<6*size*size; i++)
     {
-        int mod = i%6;
-        int dv = int(i/6);
+        mod = i%6;
+        dv = int(i/6);
         switch(mod)
         {
             case 2://x
@@ -152,12 +192,14 @@ float* MapVertices(int size, float step, float* diamond)
             case 1://z
                 M[i]=diamond[dv]; //float((rand() % 3)-1.5);
                 break;
-            case 4:
-                M[i] = (M[i-3]-min)/(max-min);
-                break;
             case 3:
+                M[i] = heatMap(diamond[dv], 'r', hmEarth, 4, min, max);
+                break;
+            case 4:
+                M[i] = heatMap(diamond[dv], 'g', hmEarth, 4, min, max);
+                break;
             case 5:
-                M[i] = 0.0f;
+                M[i] = heatMap(diamond[dv], 'b', hmEarth, 4, min, max);
                 break;
         }
     }
@@ -166,13 +208,14 @@ float* MapVertices(int size, float step, float* diamond)
 
 unsigned int* MapIndices(int size)
 {
-    int s = 6*pow(size-1, 2);
+    int s = 6*pow(size-1, 2), squareIdx;
     unsigned int* M = new unsigned int [s]();
+
     for(int i = 0; i<size-1; i++)
     {
        for(int j = 0; j<size-1; j++)
         {
-            int squareIdx = (j+(size-1)*i);
+            squareIdx = (j+(size-1)*i);
             if(squareIdx%2)
             {
             M[6*squareIdx] = squareIdx + i;
@@ -196,61 +239,89 @@ unsigned int* MapIndices(int size)
     return M;
 }
 
-float* diamondSquare(int size, float smoothness, int filter)
+float* diamondSquare(int size, int number, float smoothness, int filter)
 {
-    float* M = new float [size*size]();
-    M[0] = float(((rand() % 100)/(2*size))-size);
-    M[size-1] = float(((rand() % 100)/(2*size))-size);
-    M[size*(size-1)] = float(((rand() % 100)/(2*size))-size);
-    M[(size*size)-1] = float(((rand() % 100)/(2*size))-size);
-    
-    int i = size - 1;
-    while(i>1)
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(-1, 1);
+    float* M = new float [size*size*number*number]();
+    int xNumb, yNumb, i, id, shift, somme, n;
+    float moyenne;
+
+    for(int numb = 0; numb<pow(number, 2); numb++)
     {
-        int id = i/2;
-        for(int x = id; x < size; x+=i)
+        xNumb = size*(numb/number);
+        yNumb = size*(numb%number);
+
+        M[0+xNumb+yNumb] = float(size*dis(gen));
+        M[size-1+xNumb+yNumb] = float(size*dis(gen));
+        M[(size-1)*number+(size-1)+xNumb+yNumb] = float(size*dis(gen));
+        M[((size-1)*number)+xNumb+yNumb] = float(size*dis(gen));
+
+        if(numb)
         {
-            for(int y = id; y < size; y+=i)
+            if(numb/number) 
+            { 
+                M[0+xNumb+yNumb] = M[0+xNumb+yNumb-(size-1)*number];
+                M[size-1+xNumb+yNumb] = M[size-1+xNumb+yNumb-(size-1)*number];
+            }
+            else if(numb%number)
             {
-                float moyenne = (M[(size*(x - id))+y - id] + M[(size*(x - id))+y + id] + M[(size*(x + id))+y + id] + M[(size*(x + id))+y - id]) / 4.0;
-                M[(size*x)+y] = moyenne + (((rand() % 100)/(2*id))-id)*smoothness;
+                M[0+xNumb+yNumb] = M[0+xNumb+yNumb-1];
+                M[((size-1)*number)+xNumb+yNumb] = M[((size-1)*number)+xNumb+yNumb-1];
             }
         }
-        int shift = 0;
-        for(int x = 0; x < size; x+=id)
+        i = size - 1;
+        while(i>1)
         {
-            if(!shift) shift = id;
-            else shift = 0;
-            for(int y = shift; y < size; y+=i)
+            id = i/2;
+            for(int x = id; x < size; x+=i)
             {
-                int somme = 0, n = 0;
-                if(x>=id)
+                for(int y = id; y < size; y+=i)
                 {
-                    somme += M[(size*(x - id))+ y];
-                    n++;
+                    moyenne = (M[((size-1)*number*(xNumb + x - id))+ yNumb + y - id] 
+                                    + M[((size-1)*number*(xNumb + x - id))+ yNumb + y + id] 
+                                    + M[((size-1)*number*(xNumb + x + id))+ yNumb + y + id] 
+                                    + M[((size-1)*number*(xNumb + x + id))+ yNumb + y - id]) / 4.0;
+                    M[((size-1)*number*(x + xNumb)) + yNumb + y] = moyenne + (float(id*dis(gen)))*smoothness;
                 }
-                if(x+id<size)
-                {
-                    somme += M[(size*(x + id)) + y];
-                    n++;
-                }
-                if(y>=id)
-                {
-                    somme += M[(size*x) + y - id];
-                    n++;
-                }
-                if(y+id<size)
-                {
-                    somme += M[(size*x) + y + id];
-                    n++;
-                }
-                M[(size*x) + y] = (float(somme) / float(n)) + (((rand() % 100)/(2*id))-id)*smoothness;
             }
-            
+            shift = 0;
+            for(int x = 0; x < size; x+=id)
+            {
+                if(!shift) shift = id;
+                else shift = 0;
+                for(int y = shift; y < size; y+=i)
+                {
+                    somme = 0; n = 0;
+                    if(x>=id)
+                    {
+                        somme += M[((size-1)*number*(xNumb + x - id))+ yNumb + y];
+                        n++;
+                    }
+                    if(x+id<size)
+                    {
+                        somme += M[((size-1)*number*(xNumb + x + id)) + yNumb + y];
+                        n++;
+                    }
+                    if(y>=id)
+                    {
+                        somme += M[((size-1)*number*(x + xNumb)) + yNumb + y - id];
+                        n++;
+                    }
+                    if(y+id<size)
+                    {
+                        somme += M[((size-1)*number*(x + xNumb)) + yNumb + y + id];
+                        n++;
+                    }
+                    M[((size-1)*number*(x + xNumb)) + yNumb + y] = (float(somme) / float(n)) + (float(id*dis(gen)))*smoothness;
+                }
+                
+            }
+            i = id;
         }
-        i = id;
     }
-    return medianFilter(M, size, 2*filter+1);
+    return medianFilter(M, size*number, filter);
 }
 
 
