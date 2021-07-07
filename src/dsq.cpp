@@ -253,22 +253,22 @@ float* diamondSquare(int size, int number, float smoothness, int filter)
         xNumb = size*(numb/number);
         yNumb = size*(numb%number);
 
-        M[0+xNumb+yNumb] = float(size*dis(gen));
-        M[size-1+xNumb+yNumb] = float(size*dis(gen));
-        M[(size-1)*number+(size-1)+xNumb+yNumb] = float(size*dis(gen));
-        M[((size-1)*number)+xNumb+yNumb] = float(size*dis(gen));
+        M[0+((size-1)*number*xNumb)+yNumb] = float(size*dis(gen));
+        M[size-1+((size-1)*number*xNumb)+yNumb] = float(size*dis(gen));
+        M[(size-1)*number+(size-1)+((size-1)*number*xNumb)+yNumb] = float(size*dis(gen));
+        M[((size-1)*number)+((size-1)*number*xNumb)+yNumb] = float(size*dis(gen));
 
         if(numb)
         {
             if(numb/number) 
             { 
-                M[0+xNumb+yNumb] = M[0+xNumb+yNumb-(size-1)*number];
-                M[size-1+xNumb+yNumb] = M[size-1+xNumb+yNumb-(size-1)*number];
+                M[0+((size-1)*number*xNumb)+yNumb] = M[0+((size-1)*number*xNumb)+yNumb-(size-1)*number];
+                M[size-1+((size-1)*number*xNumb)+yNumb] = M[size-1+((size-1)*number*xNumb)+yNumb-(size-1)*number];
             }
             else if(numb%number)
             {
-                M[0+xNumb+yNumb] = M[0+xNumb+yNumb-1];
-                M[((size-1)*number)+xNumb+yNumb] = M[((size-1)*number)+xNumb+yNumb-1];
+                M[0+((size-1)*number*xNumb)+yNumb] = M[0+((size-1)*number*xNumb)+yNumb-1];
+                M[((size-1)*number)+((size-1)*number*xNumb)+yNumb] = M[((size-1)*number)+((size-1)*number*xNumb)+yNumb-1];
             }
         }
         i = size - 1;
