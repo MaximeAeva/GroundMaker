@@ -239,6 +239,15 @@ unsigned int* MapIndices(int size)
     return M;
 }
 
+/**
+ * @brief DiamondSquare algorithm
+ * 
+ * @param size Square border size (Must be odd number)
+ * @param number Number of square on a border
+ * @param smoothness [0 1]. Percentage of amplitude decrease
+ * @param filter Odd number for low pass filter
+ * @return float* 2D map of altitude values
+ */
 float* diamondSquare(int size, int number, float smoothness, int filter)
 {
     std::random_device rd;
@@ -253,22 +262,26 @@ float* diamondSquare(int size, int number, float smoothness, int filter)
         xNumb = size*(numb/number);
         yNumb = size*(numb%number);
 
-        M[0+((size-1)*number*xNumb)+yNumb] = float(size*dis(gen));
-        M[size-1+((size-1)*number*xNumb)+yNumb] = float(size*dis(gen));
-        M[(size-1)*number+(size-1)+((size-1)*number*xNumb)+yNumb] = float(size*dis(gen));
-        M[((size-1)*number)+((size-1)*number*xNumb)+yNumb] = float(size*dis(gen));
+        //Left up
+        M[(xNumb*size*number)+yNumb] = float(size*dis(gen));
+        //Right up
+        M[(xNumb*size*number)+yNumb+size-1] = float(size*dis(gen));
+        //Left down
+        M[((xNumb+size-1)*size*number)+yNumb] = float(size*dis(gen));
+        //Right down
+        M[((xNumb+size-1)*size*number)+yNumb+size-1] = float(size*dis(gen));
 
         if(numb)
         {
             if(numb/number) 
             { 
-                M[0+((size-1)*number*xNumb)+yNumb] = M[0+((size-1)*number*xNumb)+yNumb-(size-1)*number];
-                M[size-1+((size-1)*number*xNumb)+yNumb] = M[size-1+((size-1)*number*xNumb)+yNumb-(size-1)*number];
+                M[(xNumb*size*number)+yNumb] = M[((xNumb-1)*size*number)+yNumb];
+                M[(xNumb*size*number)+yNumb+size-1] = M[((xNumb-1)*size*number)+yNumb+size-1];
             }
-            else if(numb%number)
+            if(numb%number)
             {
-                M[0+((size-1)*number*xNumb)+yNumb] = M[0+((size-1)*number*xNumb)+yNumb-1];
-                M[((size-1)*number)+((size-1)*number*xNumb)+yNumb] = M[((size-1)*number)+((size-1)*number*xNumb)+yNumb-1];
+                M[(xNumb*size*number)+yNumb] = M[(xNumb*size*number)+yNumb-1];
+                M[((xNumb+size-1)*size*number)+yNumb] = M[((xNumb+size-1)*size*number)+yNumb-1];
             }
         }
         i = size - 1;
@@ -279,11 +292,11 @@ float* diamondSquare(int size, int number, float smoothness, int filter)
             {
                 for(int y = id; y < size; y+=i)
                 {
-                    moyenne = (M[((size-1)*number*(xNumb + x - id))+ yNumb + y - id] 
-                                    + M[((size-1)*number*(xNumb + x - id))+ yNumb + y + id] 
-                                    + M[((size-1)*number*(xNumb + x + id))+ yNumb + y + id] 
-                                    + M[((size-1)*number*(xNumb + x + id))+ yNumb + y - id]) / 4.0;
-                    M[((size-1)*number*(x + xNumb)) + yNumb + y] = moyenne + (float(id*dis(gen)))*smoothness;
+                    moyenne = (M[((size)*number*(xNumb + x - id))+ yNumb + y - id - 1] 
+                                    + M[((size)*number*(xNumb + x - id))+ yNumb + y + id - 1] 
+                                    + M[((size)*number*(xNumb + x + id))+ yNumb + y + id - 1] 
+                                    + M[((size)*number*(xNumb + x + id))+ yNumb + y - id - 1]) / 4.0;
+                    M[((size)*number*(x + xNumb)) + yNumb + y - 1] = moyenne + (float(id*dis(gen)))*smoothness;
                 }
             }
             shift = 0;
@@ -296,25 +309,25 @@ float* diamondSquare(int size, int number, float smoothness, int filter)
                     somme = 0; n = 0;
                     if(x>=id)
                     {
-                        somme += M[((size-1)*number*(xNumb + x - id))+ yNumb + y];
+                        somme += M[((size)*number*(xNumb + x - id))+ yNumb + y - 1];
                         n++;
                     }
                     if(x+id<size)
                     {
-                        somme += M[((size-1)*number*(xNumb + x + id)) + yNumb + y];
+                        somme += M[((size)*number*(xNumb + x + id)) + yNumb + y - 1];
                         n++;
                     }
                     if(y>=id)
                     {
-                        somme += M[((size-1)*number*(x + xNumb)) + yNumb + y - id];
+                        somme += M[((size)*number*(x + xNumb)) + yNumb + y - id - 1];
                         n++;
                     }
                     if(y+id<size)
                     {
-                        somme += M[((size-1)*number*(x + xNumb)) + yNumb + y + id];
+                        somme += M[((size)*number*(x + xNumb)) + yNumb + y + id - 1];
                         n++;
                     }
-                    M[((size-1)*number*(x + xNumb)) + yNumb + y] = (float(somme) / float(n)) + (float(id*dis(gen)))*smoothness;
+                    M[((size)*number*(x + xNumb)) + yNumb + y - 1] = (float(somme) / float(n)) + (float(id*dis(gen)))*smoothness;
                 }
                 
             }
