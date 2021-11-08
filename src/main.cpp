@@ -75,9 +75,9 @@ int main()
     Camera cam();
 
     //Parameters
-    int dim = 7;//Square side (2^dim + 1)
+    int dim = 6;//Square side (2^dim + 1)
     int number = 3;//Number of square on a side (total side points = (2^dim + 1)*number)
-    int filter = 7;//Side size of the median filter
+    int filter = 3;//Side size of the median filter
     float smoothness = 1;//Coefficient to lower the added randomization
     int step = 1;//Grid space
 

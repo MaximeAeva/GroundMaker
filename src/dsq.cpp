@@ -7,6 +7,13 @@ float hmEarth[16] = {
     0.9, 200.0/255.0, 210.0/255.0, 190.0/255.0 //White
 };
 
+float test[16] = {
+    0.05, 235.0/255.0, 49.0/255.0, 16.0/255.0, //Red
+    0.2, 10.0/255.0, 10.0/255.0, 0.0, //Black
+    0.6, 90.0/255.0, 160.0/255.0, 70.0/255.0, //Green
+    0.9, 200.0/255.0, 210.0/255.0, 190.0/255.0 //White
+};
+
 /**
  * @brief 
  * 
@@ -256,12 +263,12 @@ float* diamondSquare(int size, int number, float smoothness, int filter)
     float* M = new float [size*size*number*number]();
     int xNumb, yNumb, i, id, shift, somme, n;
     float moyenne;
-
+    
     for(int numb = 0; numb<pow(number, 2); numb++)
     {
         xNumb = size*(numb/number);
         yNumb = size*(numb%number);
-
+        
         //Left up
         M[(xNumb*size*number)+yNumb] = float(size*dis(gen));
         //Right up
@@ -273,15 +280,19 @@ float* diamondSquare(int size, int number, float smoothness, int filter)
 
         if(numb)
         {
-            if(numb/number) 
+            if(numb/number) //If not in first row, apply upper edge value from previous row
             { 
-                M[(xNumb*size*number)+yNumb] = M[((xNumb-1)*size*number)+yNumb];
-                M[(xNumb*size*number)+yNumb+size-1] = M[((xNumb-1)*size*number)+yNumb+size-1];
+                for(int edge = 0; edge<size; edge++)
+                {   
+                    M[(xNumb*size*number)+yNumb+edge] = M[((xNumb-1)*size*number)+yNumb+edge];
+                }
             }
-            if(numb%number)
+            if(numb%number) //If not first column, apply left edge previous right edge
             {
-                M[(xNumb*size*number)+yNumb] = M[(xNumb*size*number)+yNumb-1];
-                M[((xNumb+size-1)*size*number)+yNumb] = M[((xNumb+size-1)*size*number)+yNumb-1];
+                for(int edge = 0; edge<size; edge++)
+                {   
+                    M[((xNumb+edge)*size*number)+yNumb] = M[((xNumb+edge)*size*number)+yNumb-1];
+                }
             }
         }
         i = size - 1;
@@ -292,11 +303,12 @@ float* diamondSquare(int size, int number, float smoothness, int filter)
             {
                 for(int y = id; y < size; y+=i)
                 {
-                    moyenne = (M[((size)*number*(xNumb + x - id))+ yNumb + y - id - 1] 
-                                    + M[((size)*number*(xNumb + x - id))+ yNumb + y + id - 1] 
-                                    + M[((size)*number*(xNumb + x + id))+ yNumb + y + id - 1] 
-                                    + M[((size)*number*(xNumb + x + id))+ yNumb + y - id - 1]) / 4.0;
-                    M[((size)*number*(x + xNumb)) + yNumb + y - 1] = moyenne + (float(id*dis(gen)))*smoothness;
+                    moyenne = (M[((size)*number*(xNumb + x - id))+ yNumb + y - id] 
+                                    + M[((size)*number*(xNumb + x - id))+ yNumb + y + id] 
+                                    + M[((size)*number*(xNumb + x + id))+ yNumb + y + id] 
+                                    + M[((size)*number*(xNumb + x + id))+ yNumb + y - id]) / 4.0;
+                    if(M[((size)*number*(x + xNumb)) + yNumb + y]==0)
+                        M[((size)*number*(x + xNumb)) + yNumb + y] = moyenne + (float(id*dis(gen)))*smoothness;
                 }
             }
             shift = 0;
@@ -309,32 +321,36 @@ float* diamondSquare(int size, int number, float smoothness, int filter)
                     somme = 0; n = 0;
                     if(x>=id)
                     {
-                        somme += M[((size)*number*(xNumb + x - id))+ yNumb + y - 1];
+                        somme += M[((size)*number*(xNumb + x - id))+ yNumb + y];
                         n++;
                     }
                     if(x+id<size)
                     {
-                        somme += M[((size)*number*(xNumb + x + id)) + yNumb + y - 1];
+                        somme += M[((size)*number*(xNumb + x + id)) + yNumb + y];
                         n++;
                     }
                     if(y>=id)
                     {
-                        somme += M[((size)*number*(x + xNumb)) + yNumb + y - id - 1];
+                        somme += M[((size)*number*(x + xNumb)) + yNumb + y - id];
                         n++;
                     }
                     if(y+id<size)
                     {
-                        somme += M[((size)*number*(x + xNumb)) + yNumb + y + id - 1];
+                        somme += M[((size)*number*(x + xNumb)) + yNumb + y + id];
                         n++;
                     }
-                    M[((size)*number*(x + xNumb)) + yNumb + y - 1] = (float(somme) / float(n)) + (float(id*dis(gen)))*smoothness;
+                    if(M[((size)*number*(x + xNumb)) + yNumb + y]==0)
+                        M[((size)*number*(x + xNumb)) + yNumb + y] = (float(somme) / float(n)) + (float(id*dis(gen)))*smoothness;
                 }
                 
             }
             i = id;
         }
     }
-    return medianFilter(M, size*number, filter);
+    M[0] = 100;
+    M[size*size*number*number-1] = -100;
+    //return medianFilter(M, size*number, filter);
+    return M;
 }
 
 
