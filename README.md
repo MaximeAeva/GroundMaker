@@ -4,9 +4,9 @@
 Montains, lakes, sky... all behind your screen 
 Spoiler : It will never be better than grab your backpack and go for a hike 🏔🌲
 
-![Hey!](https://github.com/MaximeAeva/GroundMaker/blob/master/res/Playa.png)
+![Hey!](https://github.com/MaximeAeva/GroundMaker/blob/master/res/Playa.PNG)
 
-![Hey!](https://github.com/MaximeAeva/GroundMaker/blob/master/res/FromAbove.png)
+![Hey!](https://github.com/MaximeAeva/GroundMaker/blob/master/res/FromAbove.PNG)
 
 ## Installation
 Windows:
