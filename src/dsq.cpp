@@ -1,9 +1,11 @@
 #include "dsq.hpp"
 
-float hmEarth[16] = {
-    0.05, 235.0/255.0, 49.0/255.0, 16.0/255.0, //Red
-    0.2, 10.0/255.0, 10.0/255.0, 0.0, //Black
-    0.6, 90.0/255.0, 160.0/255.0, 70.0/255.0, //Green
+float hmEarth[24] = {
+    0.05, 0.0/255.0, 0.0/255.0, 92.0/255.0, //Deep blue
+    0.2, 80.0/255.0, 110.0/255.0, 230.0/255.0, //Blue
+    0.25, 255.0/255.0, 205.0/255.0, 75.0/255.0, //Yellow
+    0.35, 90.0/255.0, 160.0/255.0, 70.0/255.0, //Green
+    0.7, 50.0/255.0, 90.0/255.0, 50.0/255.0, //Deep Green
     0.9, 200.0/255.0, 210.0/255.0, 190.0/255.0 //White
 };
 
@@ -200,13 +202,13 @@ float* MapVertices(int size, float step, float* diamond)
                 M[i]=diamond[dv]; //float((rand() % 3)-1.5);
                 break;
             case 3:
-                M[i] = heatMap(diamond[dv], 'r', hmEarth, 4, min, max);
+                M[i] = heatMap(diamond[dv], 'r', hmEarth, 6, min, max);
                 break;
             case 4:
-                M[i] = heatMap(diamond[dv], 'g', hmEarth, 4, min, max);
+                M[i] = heatMap(diamond[dv], 'g', hmEarth, 6, min, max);
                 break;
             case 5:
-                M[i] = heatMap(diamond[dv], 'b', hmEarth, 4, min, max);
+                M[i] = heatMap(diamond[dv], 'b', hmEarth, 6, min, max);
                 break;
         }
     }
@@ -347,10 +349,7 @@ float* diamondSquare(int size, int number, float smoothness, int filter)
             i = id;
         }
     }
-    M[0] = 100;
-    M[size*size*number*number-1] = -100;
-    //return medianFilter(M, size*number, filter);
-    return M;
+    return medianFilter(M, size*number, filter);
 }
 
 

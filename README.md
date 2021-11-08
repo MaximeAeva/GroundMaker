@@ -4,7 +4,9 @@
 Montains, lakes, sky... all behind your screen 
 Spoiler : It will never be better than grab your backpack and go for a hike 🏔🌲
 
-![Hey!](https://github.com/MaximeAeva/GroundMaker/blob/master/res/hello.gif)
+![Hey!](https://github.com/MaximeAeva/GroundMaker/blob/master/res/Playa.png)
+
+![Hey!](https://github.com/MaximeAeva/GroundMaker/blob/master/res/FromAbove.png)
 
 ## Installation
 Windows:
@@ -19,6 +21,8 @@ Trying to generate beautiful landscapes
 
 ## Release History
 
+*0.1.0
+|   OP earth map generation. Adding realistic features later
 *0.0.0
 |   First commit + index sigsegv for large area mode (need time)
 
